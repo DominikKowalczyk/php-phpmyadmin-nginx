@@ -1,25 +1,35 @@
-location ~ [^/]\.php(/|$) {
-    fastcgi_split_path_info ^(.+?\.php)(/.*)$;
-    if (!-f $document_root$fastcgi_script_name) {
-        return 404;
-    }
+# pass PHP scripts to FastCGI server
+	#
+	location ~ [^/]\.php(/|$) {
+		fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+		if (!-f $document_root$fastcgi_script_name) {
+		return 404;
+		}
+	
 
-    # Mitigate https://httpoxy.org/ vulnerabilities
-    fastcgi_param HTTP_PROXY "";
+	# Mitigate https://httpoxy.org/ vulnerabilities
+	fastcgi_param HTTP_PROXY "";
 
-    fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
-    fastcgi_index index.php;
+	fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+	include snippets/fastcgi-php.conf;
 
-    # include the fastcgi_param setting
-    include fastcgi_params;
+	# include the fastcgi_param setting
+	 include fastcgi_params;
+	 
 
-    # SCRIPT_FILENAME parameter is used for PHP FPM determining
-    #  the script name. If it is not set in fastcgi_params file,
-    # i.e. /etc/nginx/fastcgi_params or in the parent contexts,
-    # please comment off following line:
-    # fastcgi_param  SCRIPT_FILENAME   $document_root$fastcgi_script_name;
-}
+	# SCRIPT_FILENAME parameter is used for PHP FPM determining
+	#  the script name. If it is not set in fastcgi_params file,
+	# i.e. /etc/nginx/fastcgi_params or in the parent contexts,
+	# please comment off following line:
+	#fastcgi_param  SCRIPT_FILENAME   $document_root$fastcgi_script_name;
+	}
 
+	# deny access to .htaccess files, if Apache's document root
+	# concurs with nginx's one
+	#
+	location ~ /\.ht {
+		deny all;
+	}
 location /phpmyadmin {
     root /var/www/html;
     index index.php index.html index.htm;
